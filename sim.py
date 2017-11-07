@@ -24,10 +24,10 @@ def main(args):
     }
 
     events_description = {
-        "burst_arrival": {"rate": 10, "elem": "dna"},
-        "mrna_decay": {"rate": 4, "elem": "mrna"},
-        "protein_prod": {"rate": 0.0, "elem": "mrna"},
-        "protein_decay": {"rate": 0.0, "elem": "protein"},
+        "burst_arrival": {"rate": 1, "elem": "dna"},
+        "mrna_decay": {"rate": 2, "elem": "mrna"},
+        "protein_prod": {"rate": 15, "elem": "mrna"},
+        "protein_decay": {"rate": 0.01, "elem": "protein"},
     }
 
     exp_id = 'CP%.6d_mbd-%s_mbs%02.2f_kb%.1f_um%.1f_kp%.1f_up%.2f_T%07d_FS%03d'\
@@ -43,9 +43,9 @@ def main(args):
     
     experiment["exp_id"] = exp_id
 
-    if os.path.isfile("data/%s.npy" % experiment["exp_id"]) and not args["redo_simulation"]:
+    if os.path.isfile("../data/%s.npy" % experiment["exp_id"]) and not args["redo_simulation"]:
         print("We already have this data. I will plot it")
-        data = np.load("data/%s.npy" % experiment["exp_id"])
+        data = np.load("../data/%s.npy" % experiment["exp_id"])
         experiment_data = data[2]
     else:
         experiment_data = run_simulation(experiment, events_description)

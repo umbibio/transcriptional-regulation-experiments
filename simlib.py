@@ -4,21 +4,30 @@ from multiprocessing import Process, Pool
 import numpy as np
 import matplotlib.pyplot as plt
 
-def run_batch(experiment, events_description, pacifier, job):
+def run_batch(experiment, events_description, njobs, job):
     timeseries = []
     dataseries = []
-    for iteration in range(experiment["cell_population"]/len(pacifier)):
-        if iteration >= int(np.ceil(pacifier[job])) * len(pacifier):
-            pacifier[job] += experiment["cell_population"] / 100 / len(pacifier)
-            total_pacifier = sum(pacifier) * len(pacifier)
-            print "\033[F%s Progress: % 4d%%" % (job, int(np.ceil(float(total_pacifier * len(pacifier))/experiment["cell_population"] * 100 )))
+    pacifier = 0.0
+    samples = experiment["cell_population"] / njobs
+
+    prefix = "\033[F" * (njobs - job)
+    suffix = "\n" * (njobs - job - 1)
+
+    for iteration in range(samples):
+        if iteration >= int(np.ceil(pacifier)):
+            pacifier += samples / 100
+            print prefix + "Job #: %s\tProgress: % 4d%%" % (job, int(np.ceil(float(pacifier)/samples * 100 ))) + suffix
 
         time_list, data_list = gillespie(experiment, events_description)
         timeseries.append(time_list)
         dataseries.append(data_list)
+    
     return timeseries, dataseries
 
 def run_simulation(experiment, events_description):
+
+    njobs = 4
+
     print "\nStarting simulation...\n"
     print "Total cells:\t\t%s" % experiment["cell_population"]
     print "Mean mRNA Burst Size:\t%s" % experiment["mean_burst_size"]
@@ -27,35 +36,29 @@ def run_simulation(experiment, events_description):
     print "Protein Prd rate:\t%s" % events_description["protein_prod"]["rate"]
     print "Protein Dis rate:\t%s" % events_description["protein_decay"]["rate"]
     print "Time to simulate:\t%s" % experiment["duration"]
-    print "\n"
+    print "\n" * njobs
 
     # Each element of this list represents a number of proteins created by one mRNA
     #timeseries = []
     #dataseries = []
 
-    pacifier = [0.0, 0.0, 0.0, 0.0]
-
-    pool = Pool(4)
+    pool = Pool(njobs)
     data = {}
     time_s = {}
     data_s = {}
 
-    for job in range(4):
-        data[job] = pool.apply_async(run_batch, (experiment, events_description, pacifier, job))
+    for job in range(njobs):
+        data[job] = pool.apply_async(run_batch, (experiment, events_description, njobs, job))
 
     pool.close()
     pool.join()
 
     timeseries, dataseries = [], []
 
-    for job in range(4):
+    for job in range(njobs):
         time_s[job], data_s[job] = data[job].get()
         timeseries += time_s[job]
         dataseries += data_s[job]
-
-    #print "\033[FProgress: % 4d%%" % 100
-
-    print len(timeseries)
 
     print "\nRearranging arrays...\n\n"
     protein_number = []
@@ -171,7 +174,7 @@ def gillespie(experiment, events_description):
     return time, data
 
 def save_datafile(events_description, experiment, experiment_data):
-    filepath = 'data/%s' % (experiment["exp_id"])
+    filepath = '../data/%s' % (experiment["exp_id"])
     np.save(filepath, [events_description, experiment, experiment_data])
 
 def save_last_histogram(events_description, experiment, experiment_data, max_bin=None, max_height=None, show_plot=False):
@@ -253,12 +256,12 @@ def save_histogram(events_description, experiment, clock_time, protein_numbers, 
         plt.show()
 
     if make_own_dir:
-        directory = 'figs/tseries/%s/%s' % (experiment["exp_id"], experiment["molecule_to_plot"])
+        directory = '../figs/tseries/%s/%s' % (experiment["exp_id"], experiment["molecule_to_plot"])
         if not os.path.exists(directory):
             os.makedirs(directory)
         fig_path = directory + '/T%07d.png' % (clock_time)
     else:
-        fig_path = 'figs/%s_%s_T%07d.png' % (experiment["molecule_to_plot"], experiment["exp_id"], clock_time)
+        fig_path = '../figs/%s_%s_T%07d.png' % (experiment["molecule_to_plot"], experiment["exp_id"], clock_time)
 
     print "\rSaving fig to: %s" % fig_path
     fig1.savefig(fig_path)
