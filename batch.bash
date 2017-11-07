@@ -2,7 +2,7 @@
 
 for i in {1..500}
 do
-    for mbs in {1..100}
+    for mbs in {1..10}
     do
         ./sim.py \
             --results-file results.dat \
@@ -10,7 +10,6 @@ do
             --redo-simulation \
             --timeseries-framestep 1000 \
             --n-cell 10000 \
-            --mean-burst-size $mbs \
-            > /dev/null
+            --mean-burst-size $mbs
     done
 done
