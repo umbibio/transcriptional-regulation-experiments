@@ -2,7 +2,7 @@
 import argparse, os
 import numpy as np
 from simlib import gillespie, run_simulation, save_timeseries_histogram,\
-                   save_datafile, save_last_histogram
+                   save_datafile, save_last_histogram, calculate_results
 
 def main(args):
     """The main method that runs the simulation"""
@@ -54,6 +54,21 @@ def main(args):
         save_timeseries_histogram(events_description, experiment, experiment_data)
     if not args["skip_final_plot"]:
         save_last_histogram(events_description, experiment, experiment_data, show_plot=True)
+
+    rslt = calculate_results(experiment_data)
+    results_str = "% 7d" % rslt[0]
+    for i in range(1, len(rslt)):
+        results_str += "\t% 15.4f" % rslt[i]
+    results_str += "\t% 15.4f" % experiment["mean_burst_size"]
+    results_str += "\t%s" % experiment["burst_size_distribution"]
+    results_str += "\t%s" % experiment["exp_id"]
+    results_str += "\n"
+    print results_str
+
+
+    if args["results_file"] is not None:
+        args["results_file"].write(results_str)
+
     print "\nDone!\n"
 
 
@@ -97,5 +112,7 @@ parser.add_argument('--timeseries-framestep', dest='framestep', action='store',
                     required=False, default=50, type=int,
                     help='Time intervals between data frames')
 
+parser.add_argument('--results-file', dest='results_file', type=argparse.FileType('a'),
+                    default=None)
 
 main(vars(parser.parse_args()))

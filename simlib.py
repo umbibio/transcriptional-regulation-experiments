@@ -269,3 +269,18 @@ def save_histogram(events_description, experiment, clock_time, protein_numbers, 
     fig1.clf()
     plt.clf()
     gc.collect()
+
+def calculate_results(experiment_data):
+    final_protein_numbers = experiment_data["protein"][-1]
+    final_mrna_numbers = experiment_data["mrna"][-1]
+
+    total_cells = len(final_mrna_numbers)
+
+    protein_mean = np.mean(final_protein_numbers)
+    protein_var = np.var(final_protein_numbers)
+    protein_ff = protein_var / protein_mean
+    mrna_mean = np.mean(final_mrna_numbers)
+    mrna_var = np.var(final_mrna_numbers)
+    mrna_ff = mrna_var / mrna_mean
+
+    return [total_cells, mrna_mean, mrna_var, mrna_ff, protein_mean, protein_var, protein_ff]
