@@ -88,7 +88,7 @@ parser.add_argument('--redo-simulation', dest='redo_simulation', action='store_t
 
 # mRNA 
 parser.add_argument('--mean-burst-size', dest='mean_burst_size', action='store',
-                    required=True, type=int,
+                    required=True, type=float,
                     help='The average size of mRNA bursts')
 
 parser.add_argument('--burst-size-distribution', dest='burst_size_distribution', action='store',
