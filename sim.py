@@ -1,8 +1,10 @@
 #!/usr/bin/python
 import argparse, os
+import time
 import numpy as np
 from simlib import gillespie, run_simulation, save_timeseries_histogram,\
-                   save_datafile, save_last_histogram, calculate_results
+                   save_datafile, save_last_histogram, calculate_results,\
+                   secondsToStr
 
 def main(args):
     """The main method that runs the simulation"""
@@ -40,8 +42,10 @@ def main(args):
                  events_description["protein_decay"]["rate"],
                  experiment["duration"],
                  experiment["framestep"])
-    
+
     experiment["exp_id"] = exp_id
+
+    start_time = time.time()
 
     if os.path.isfile("../data/%s.npy" % experiment["exp_id"]) and not args["redo_simulation"]:
         print("We already have this data. I will plot it")
@@ -49,6 +53,8 @@ def main(args):
         experiment_data = data[2]
     else:
         experiment_data = run_simulation(experiment, events_description)
+
+    end_time = time.time()
 
     if args["plot_timeseries"]:
         save_timeseries_histogram(events_description, experiment, experiment_data)
@@ -62,6 +68,7 @@ def main(args):
     results_str += "\t% 15.4f" % experiment["mean_burst_size"]
     results_str += "\t%s" % experiment["burst_size_distribution"]
     results_str += "\t%s" % experiment["exp_id"]
+    results_str += "\t%s" % secondsToStr(end_time - start_time)
     results_str += "\n"
     print results_str
 
