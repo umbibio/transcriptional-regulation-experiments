@@ -275,6 +275,26 @@ def save_histogram(events_description, experiment, clock_time, protein_numbers, 
     plt.clf()
     gc.collect()
 
+def plot_avg_vs_time(experiment_data):
+    avgs = {}
+    for key in experiment_data:
+        if key <> "time":
+            avgs[key] = []
+
+    for i, time in enumerate(experiment_data["time"]):
+        for molecule in avgs:
+            avgs[molecule].append(np.mean(experiment_data[molecule][i]))
+
+    # Two subplots, the axes array is 1-d
+    f, axarr = plt.subplots(2, sharex=True)
+    axarr[0].set_title('Avg Populations vs time')
+    axarr[-1].set_xlabel("Time")
+    for i, key in enumerate(avgs):
+        axarr[i].plot(experiment_data["time"], avgs[key])
+        axarr[i].set_ylabel("Avg %s #" % key)
+
+    plt.show()
+
 def calculate_results(experiment_data):
     final_protein_numbers = experiment_data["protein"][-1]
     final_mrna_numbers = experiment_data["mrna"][-1]
