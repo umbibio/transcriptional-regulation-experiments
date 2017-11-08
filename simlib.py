@@ -14,14 +14,15 @@ def run_batch(experiment, events_description, njobs, job):
     dataseries = []
     pacifier = 0.0
     samples = experiment["cell_population"] / njobs
+    pacifier_inc = float(max(100, samples)) / 100
 
     prefix = "\033[F" * (njobs - job)
     suffix = "\n" * (njobs - job - 1)
 
     for iteration in range(samples):
-        if iteration >= int(np.ceil(pacifier)):
-            pacifier += samples / 100
-            print prefix + "Job #: %s\tProgress: % 4d%%" % (job, int(np.ceil(float(pacifier)/samples * 100 ))) + suffix
+        if iteration >= np.ceil(pacifier):
+            pacifier += pacifier_inc
+            print prefix + "Job #: %s\tProgress: % 4.0f%%" % (job, (float(pacifier)/samples * 100 )) + suffix
 
         time_list, data_list = gillespie(experiment, events_description)
         timeseries.append(time_list)
