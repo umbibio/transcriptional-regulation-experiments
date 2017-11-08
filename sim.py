@@ -2,6 +2,7 @@
 import argparse, os
 import time
 import numpy as np
+import matplotlib.pyplot as plt
 from simlib import gillespie, run_simulation, save_timeseries_histogram,\
                    save_datafile, save_last_histogram, calculate_results,\
                    secondsToStr, plot_avg_vs_time
@@ -51,8 +52,10 @@ def main(args):
         print("We already have this data. I will plot it")
         data = np.load("../data/%s.npy" % experiment["exp_id"])
         experiment_data = data[2]
+        simulation_runned = False
     else:
         experiment_data = run_simulation(experiment, events_description)
+        simulation_runned = True
 
     end_time = time.time()
 
@@ -61,6 +64,7 @@ def main(args):
     if not args["skip_final_plot"]:
         save_last_histogram(events_description, experiment, experiment_data, show_plot=True)
         plot_avg_vs_time(experiment_data)
+        plt.show()
 
     rslt = calculate_results(experiment_data)
     results_str = "% 7d" % rslt[0]
@@ -74,7 +78,7 @@ def main(args):
     print results_str
 
 
-    if args["results_file"] is not None:
+    if args["results_file"] is not None and simulation_runned:
         args["results_file"].write(results_str)
 
     print "\nDone!\n"

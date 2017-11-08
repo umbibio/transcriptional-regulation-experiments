@@ -217,6 +217,8 @@ def save_timeseries_histogram(events_description, experiment, experiment_data, m
 
     for i, time in enumerate(experiment_data["time"]):
         save_histogram(events_description, experiment, time, experiment_data[experiment["molecule_to_plot"]][i], max_bin=max_bin, max_height=max_height, make_own_dir=True)
+        plt.clf()
+
 
 def save_histogram(events_description, experiment, clock_time, protein_numbers, max_bin=None, max_height=None, make_own_dir=False, show_plot=False):
 
@@ -264,9 +266,6 @@ def save_histogram(events_description, experiment, clock_time, protein_numbers, 
     plt.grid(True)
     plt.legend()
 
-    if show_plot:
-        plt.show()
-
     if make_own_dir:
         directory = '../figs/tseries/%s/%s' % (experiment["exp_id"], experiment["molecule_to_plot"])
         if not os.path.exists(directory):
@@ -278,8 +277,6 @@ def save_histogram(events_description, experiment, clock_time, protein_numbers, 
     print "\rSaving fig to: %s" % fig_path
     fig1.savefig(fig_path)
 
-    fig1.clf()
-    plt.clf()
     gc.collect()
 
 def plot_avg_vs_time(experiment_data):
@@ -299,8 +296,6 @@ def plot_avg_vs_time(experiment_data):
     for i, key in enumerate(avgs):
         axarr[i].plot(experiment_data["time"], avgs[key])
         axarr[i].set_ylabel("Avg %s #" % key)
-
-    plt.show()
 
 def calculate_results(experiment_data):
     final_protein_numbers = experiment_data["protein"][-1]
