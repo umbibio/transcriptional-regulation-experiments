@@ -1,8 +1,8 @@
 #!/bin/bash
 
-for i in {1..500}
+for i in {1..50}
 do
-    for mbs in {1..10}
+    for mbs in {11..15}
     do
         echo "\nRound #: $i, mRNA Burst Size: $mbs\n"
         ./sim.py \
