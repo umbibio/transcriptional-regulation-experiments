@@ -4,7 +4,7 @@ for i in {1..50}
 do
     for mbs in {11..15}
     do
-        echo "\nRound #: $i, mRNA Burst Size: $mbs\n"
+        echo -e "\nRound #: $i, mRNA Burst Size: $mbs\n"
         ./sim.py \
             --results-file results.dat \
             --skip-final-plot \
