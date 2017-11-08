@@ -1,5 +1,20 @@
 #!/bin/bash
 
+delayUntil=${1:-"None"}
+
+if [ ! $delayUntil == "None" ];
+then
+    startTime=$(date +%s)
+    endTime=$(date -d "$delayUntil" +%s)
+    if [ $? -ne 0 ];
+    then
+        echo "Time provided is not valid"
+        exit 1
+    fi
+    timeToWait=$(($endTime- $startTime))
+    sleep $timeToWait
+fi
+
 for i in {1..50}
 do
     for mbs in {11..15}
