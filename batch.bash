@@ -15,7 +15,7 @@ then
     sleep $timeToWait
 fi
 
-for mbs in {1..10}
+for mbs in {5..10}
 do
     for i in {1..50}
     do
@@ -25,7 +25,7 @@ do
             --skip-final-plot \
             --redo-simulation \
             --timeseries-framestep 1000 \
-            --n-cell 1000 \
+            --n-cell 256 \
             --burst-size-distribution geometric \
             --mean-burst-size $mbs
     done
