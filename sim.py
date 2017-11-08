@@ -100,7 +100,7 @@ parser.add_argument('--mean-burst-size', dest='mean_burst_size', action='store',
                     help='The average size of mRNA bursts')
 
 parser.add_argument('--burst-size-distribution', dest='burst_size_distribution', action='store',
-                    choices=['conditional_geometric', 'delta'],
+                    choices=['geometric', 'conditional_geometric', 'delta'],
                     required=False, default="conditional_geometric", type=str,
                     help='The type of distribution for the mRNA bursts')
 

@@ -97,9 +97,15 @@ def gillespie(experiment, events_description):
             effective_rate += molecule_population[event_generator[event]] * event_rate[event]
         return effective_rate
 
-    prob_success = 1.0 / experiment["mean_burst_size"]
+    prob_success = {}
+    prob_success["conditional_geometric"] = 1.0 / experiment["mean_burst_size"]
+    prob_success["geometric"] = 1.0 / (experiment["mean_burst_size"] + 1)
+
+    def geometric_distribution():
+        return int(np.random.geometric(prob_success["geometric"]) - 1)
+
     def conditional_geometric_distribution():
-        return np.random.geometric(prob_success)
+        return np.random.geometric(prob_success["conditional_geometric"])
 
     def delta_distribution():
         return experiment["mean_burst_size"]
@@ -107,6 +113,7 @@ def gillespie(experiment, events_description):
     distributions = {
         "delta": delta_distribution,
         "conditional_geometric": conditional_geometric_distribution,
+        "geometric": geometric_distribution,
     }
 
     clock_time = experiment["initial_time"]
