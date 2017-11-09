@@ -15,9 +15,9 @@ then
     sleep $timeToWait
 fi
 
-for mbs in {5..10}
+for mbs in {8..12}
 do
-    for i in {1..50}
+    for i in {1..10}
     do
         echo -e "\nRound #: $i, mRNA Burst Size: $mbs\n"
         ./sim.py \
@@ -25,7 +25,7 @@ do
             --skip-final-plot \
             --redo-simulation \
             --timeseries-framestep 1000 \
-            --n-cell 256 \
+            --n-cell 10000 \
             --burst-size-distribution geometric \
             --mean-burst-size $mbs
     done
