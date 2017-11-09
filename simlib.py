@@ -19,6 +19,9 @@ def run_batch(experiment, events_description, njobs, job):
     prefix = "\033[F" * (njobs - job)
     suffix = "\n" * (njobs - job - 1)
 
+    seed = int((t() - int(t()/10**8) * 10**8)) * (job + 1)
+    np.random.seed(seed)
+
     for iteration in range(samples):
         if iteration >= np.ceil(pacifier):
             pacifier += pacifier_inc
