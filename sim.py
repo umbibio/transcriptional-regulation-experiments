@@ -69,8 +69,8 @@ def main(args):
     rslt = calculate_results(experiment_data)
     results_str = "% 7d" % rslt[0]
     for i in range(1, len(rslt)):
-        results_str += "\t% 15.4f" % rslt[i]
-    results_str += "\t% 15.4f" % experiment["mean_burst_size"]
+        results_str += "\t% 15.6f" % rslt[i]
+    results_str += "\t% 15.2f" % experiment["mean_burst_size"]
     results_str += "\t%s" % experiment["burst_size_distribution"]
     results_str += "\t%s" % experiment["exp_id"]
     results_str += "\t%s" % secondsToStr(end_time - start_time)
