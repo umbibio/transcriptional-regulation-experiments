@@ -5,3 +5,4 @@ data/*
 results/*
 trash/*
 vids/*
+.vscode/settings.json
