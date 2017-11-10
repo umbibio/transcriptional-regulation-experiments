@@ -26,7 +26,7 @@ do
             --redo-simulation \
             --experiment-duration 5 \
             --n-cell 100000 \
-            --burst-size-distribution geometric \
+            --burst-size-distribution conditional_geometric \
             --mean-burst-size $mbs
     done
 done
