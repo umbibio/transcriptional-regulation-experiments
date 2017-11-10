@@ -75,7 +75,7 @@ def run_simulation(experiment, events_description):
     mrna_number = []
     time = []
     pacifier = 0.0
-    for i in range(experiment["duration"] / experiment["framestep"] + 1):
+    for i in range(int(np.round(experiment["duration"] / experiment["framestep"])) + 1):
         if i >= int(np.ceil(pacifier)):
             pacifier += experiment["duration"] / 100
             print "\033[FProgress: % 4d%%" % int(np.ceil(float(i) / experiment["duration"] * 100 ))
@@ -139,7 +139,7 @@ def gillespie(experiment, events_description):
         event_threshold[event_name] = 0.0
 
     effective_rate = calc_effective_rate()
-    timeframe = 0
+    timeframe = 0.0
     time = []
     data = []
 

@@ -22,18 +22,18 @@ def main(args):
             "mrna": 0,
             "protein": 0,
         },
-        "framestep": args["framestep"],
+        "framestep": min(args["framestep"], args["duration"]),
         "molecule_to_plot": args["molecule_data"],
     }
 
     events_description = {
-        "burst_arrival": {"rate": 1, "elem": "dna"},
+        "burst_arrival": {"rate": 10, "elem": "dna"},
         "mrna_decay": {"rate": 2, "elem": "mrna"},
-        "protein_prod": {"rate": 15, "elem": "mrna"},
-        "protein_decay": {"rate": 0.01, "elem": "protein"},
+        "protein_prod": {"rate": 0.0, "elem": "mrna"},
+        "protein_decay": {"rate": 0.0, "elem": "protein"},
     }
 
-    exp_id = 'CP%.6d_mbd-%s_mbs%02.2f_kb%.1f_um%.1f_kp%.1f_up%.2f_T%07d_FS%03d'\
+    exp_id = 'CP%.6d_mbd-%s_mbs%02.2f_kb%.1f_um%.1f_kp%.1f_up%.2f_T%07d_FS%03.2f'\
               % (experiment["cell_population"],
                  experiment["burst_size_distribution"],
                  experiment["mean_burst_size"],
@@ -121,7 +121,7 @@ parser.add_argument('--plot-timeseries', dest='plot_timeseries', action='store_t
                     help='Save PNG sequence of the simulation\'s timeseries')
 
 parser.add_argument('--timeseries-framestep', dest='framestep', action='store',
-                    required=False, default=50, type=int,
+                    required=False, default=50, type=float,
                     help='Time intervals between data frames')
 
 parser.add_argument('--results-file', dest='results_file', type=argparse.FileType('a'),
