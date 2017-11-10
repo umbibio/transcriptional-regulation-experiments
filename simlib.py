@@ -1,5 +1,6 @@
 """Methods for the simulation"""
 import gc, os
+from time import time
 from multiprocessing import Process, Pool
 import numpy as np
 import matplotlib.pyplot as plt
@@ -19,7 +20,7 @@ def run_batch(experiment, events_description, njobs, job):
     prefix = "\033[F" * (njobs - job)
     suffix = "\n" * (njobs - job - 1)
 
-    seed = int((t() - int(t()/10**8) * 10**8)) * (job + 1)
+    seed = int((time() - int(time()/10**8) * 10**8)) * (job + 1)
     np.random.seed(seed)
 
     for iteration in range(samples):
