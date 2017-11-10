@@ -24,9 +24,10 @@ do
             --results-file results.dat \
             --skip-final-plot \
             --redo-simulation \
-            --experiment-duration 5 \
+            --experiment-duration 150 \
+            --timeseries-framestep 150 \
             --n-cell 100000 \
-            --burst-size-distribution conditional_geometric \
+            --burst-size-distribution geometric \
             --mean-burst-size $mbs
     done
 done

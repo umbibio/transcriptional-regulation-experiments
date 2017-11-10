@@ -15,6 +15,23 @@ then
     sleep $timeToWait
 fi
 
+for mbs in {1..2}
+do
+    for i in {1..5}
+    do
+        echo -e "\nmRNA Burst Size: $mbs, Round #: $i\n"
+        ./sim.py \
+            --results-file results.dat \
+            --skip-final-plot \
+            --redo-simulation \
+            --experiment-duration 150 \
+            --timeseries-framestep 150 \
+            --n-cell 100000 \
+            --burst-size-distribution delta \
+            --mean-burst-size $mbs
+    done
+done
+
 for mbs in {6..10}
 do
     for i in {1..5}
@@ -24,9 +41,10 @@ do
             --results-file results.dat \
             --skip-final-plot \
             --redo-simulation \
-            --experiment-duration 5 \
+            --experiment-duration 150 \
+            --timeseries-framestep 150 \
             --n-cell 100000 \
-            --burst-size-distribution conditional_geometric \
+            --burst-size-distribution geometric \
             --mean-burst-size $mbs
     done
 done

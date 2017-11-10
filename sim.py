@@ -29,8 +29,8 @@ def main(args):
     events_description = {
         "burst_arrival": {"rate": 10, "elem": "dna"},
         "mrna_decay": {"rate": 2, "elem": "mrna"},
-        "protein_prod": {"rate": 0.0, "elem": "mrna"},
-        "protein_decay": {"rate": 0.0, "elem": "protein"},
+        "protein_prod": {"rate": 15, "elem": "mrna"},
+        "protein_decay": {"rate": 0.05, "elem": "protein"},
     }
 
     exp_id = 'CP%.6d_mbd-%s_mbs%02.2f_kb%.1f_um%.1f_kp%.1f_up%.2f_T%07d_FS%03.2f'\
