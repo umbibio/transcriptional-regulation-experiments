@@ -48,9 +48,9 @@ def main(args):
 
     start_time = time.time()
 
-    if os.path.isfile("../data/%s.npy" % experiment["exp_id"]) and not args["redo_simulation"]:
+    if os.path.isfile("./data/%s.npy" % experiment["exp_id"]) and not args["redo_simulation"]:
         print("We already have this data. I will plot it")
-        data = np.load("../data/%s.npy" % experiment["exp_id"])
+        data = np.load("./data/%s.npy" % experiment["exp_id"])
         experiment_data = data[2]
         simulation_runned = False
     else:

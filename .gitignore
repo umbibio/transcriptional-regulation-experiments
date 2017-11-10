@@ -1,2 +1,7 @@
 simlib.pyc
 results.dat
+figs/*
+data/*
+results/*
+trash/*
+vids/*

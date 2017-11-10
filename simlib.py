@@ -38,6 +38,11 @@ def run_simulation(experiment, events_description):
 
     njobs = 4
 
+    dir_list = ['figs', 'data', 'results', 'trash', 'vids']
+    for dirname in dir_list:
+        if not os.path.exists('./' + dirname):
+            os.makedirs('./' + dirname)
+
     print "\nStarting simulation...\n"
     print "Total cells:\t\t%s" % experiment["cell_population"]
     print "Mean mRNA Burst Size:\t%s" % experiment["mean_burst_size"]
@@ -191,7 +196,7 @@ def gillespie(experiment, events_description):
     return time, data
 
 def save_datafile(events_description, experiment, experiment_data):
-    filepath = '../data/%s' % (experiment["exp_id"])
+    filepath = './data/%s' % (experiment["exp_id"])
     np.save(filepath, [events_description, experiment, experiment_data])
 
 def save_last_histogram(events_description, experiment, experiment_data, max_bin=None, max_height=None, show_plot=False):
@@ -272,12 +277,12 @@ def save_histogram(events_description, experiment, clock_time, protein_numbers, 
     plt.legend()
 
     if make_own_dir:
-        directory = '../figs/tseries/%s/%s' % (experiment["exp_id"], experiment["molecule_to_plot"])
+        directory = './figs/tseries/%s/%s' % (experiment["exp_id"], experiment["molecule_to_plot"])
         if not os.path.exists(directory):
             os.makedirs(directory)
         fig_path = directory + '/T%07d.png' % (clock_time)
     else:
-        fig_path = '../figs/%s_%s_T%07d.png' % (experiment["molecule_to_plot"], experiment["exp_id"], clock_time)
+        fig_path = './figs/%s_%s_T%07d.png' % (experiment["molecule_to_plot"], experiment["exp_id"], clock_time)
 
     print "\rSaving fig to: %s" % fig_path
     fig1.savefig(fig_path)
