@@ -15,9 +15,9 @@ then
     sleep $timeToWait
 fi
 
-for mbs in {1..5}
+for mbs in {7..8}
 do
-    for i in {1..5}
+    for i in {1..1}
     do
         echo -e "\nmRNA Burst Size: $mbs, Round #: $i\n"
         ./sim.py \

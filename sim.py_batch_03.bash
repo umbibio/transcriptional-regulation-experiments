@@ -15,7 +15,7 @@ then
     sleep $timeToWait
 fi
 
-for mbs in {9..10}
+for mbs in {4..5}
 do
     for i in {1..1}
     do
