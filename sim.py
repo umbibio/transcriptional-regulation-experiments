@@ -24,6 +24,7 @@ def main(args):
         },
         "framestep": min(args["framestep"], args["duration"]),
         "molecule_to_plot": args["molecule_data"],
+        "n_jobs": args["n_jobs"],
     }
 
     events_description = {
@@ -33,7 +34,7 @@ def main(args):
         "protein_decay": {"rate": 0.05, "elem": "protein"},
     }
 
-    exp_id = 'CP%.6d_mbd-%s_mbs%02.2f_kb%.1f_um%.1f_kp%.1f_up%.2f_T%07d_FS%03.2f'\
+    exp_id = 'CP%.6d_mbd-%s_mbs%02.2f_kb%.1f_um%.1f_kp%.1f_up%.2f_T%07d_FS%03.2f_i%03d'\
               % (experiment["cell_population"],
                  experiment["burst_size_distribution"],
                  experiment["mean_burst_size"],
@@ -42,7 +43,8 @@ def main(args):
                  events_description["protein_prod"]["rate"],
                  events_description["protein_decay"]["rate"],
                  experiment["duration"],
-                 experiment["framestep"])
+                 experiment["framestep"],
+                 args["i_repetition"])
 
     experiment["exp_id"] = exp_id
 
@@ -126,5 +128,14 @@ parser.add_argument('--timeseries-framestep', dest='framestep', action='store',
 
 parser.add_argument('--results-file', dest='results_file', type=argparse.FileType('a'),
                     default=None)
+
+# Multiprocessing jobs and repetitions
+parser.add_argument('--n-jobs', dest='n_jobs', action='store',
+                    required=False, default=4, type=int,
+                    help='The number of CPUs to use')
+
+parser.add_argument('--i-repetition', dest='i_repetition', action='store',
+                    required=False, default=1, type=int,
+                    help='The number of CPUs to use')
 
 main(vars(parser.parse_args()))

@@ -36,7 +36,7 @@ def run_batch(experiment, events_description, njobs, job):
 
 def run_simulation(experiment, events_description):
 
-    njobs = 4
+    njobs = experiment["n_jobs"]
 
     dir_list = ['figs', 'data', 'results', 'trash', 'vids']
     for dirname in dir_list:
