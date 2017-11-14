@@ -1,16 +1,20 @@
 """Methods for the simulation"""
-import gc, os
-from time import time
-from multiprocessing import Process, Pool
-import numpy as np
+import os
+import gc
+import signal
+from multiprocessing import Pool, TimeoutError
 import matplotlib.pyplot as plt
+import numpy as np
 
-def secondsToStr(t):
+def seconds2str(time):
+    """Format elapsed time"""
     return "%d:%02d:%02d.%03d" % \
-        reduce(lambda ll,b : divmod(ll[0],b) + ll[1:],
-            [(t*1000,),1000,60,60])
+        reduce(lambda ll, b: divmod(ll[0], b) + ll[1:],
+               [(time * 1000, ), 1000, 60, 60])
 
 def run_batch(experiment, events_description, njobs, job):
+    """This method process a subset of the total experiment. It is assigned
+    a job number and will return the corresponding partial results"""
     timeseries = []
     dataseries = []
     pacifier = 0.0
@@ -20,11 +24,10 @@ def run_batch(experiment, events_description, njobs, job):
     prefix = "\033[F" * (njobs - job)
     suffix = "\n" * (njobs - job - 1)
 
-    seed = int((time() - int(time()/10**8) * 10**8)) * (job + 1)
-    np.random.seed(seed)
+    np.random.seed()
 
     for iteration in range(samples):
-        if iteration >= np.ceil(pacifier):
+        if iteration >= np.ceil(pacifier) and experiment["pacifier_active"]:
             pacifier += pacifier_inc
             print prefix + "Job #: %s\tProgress: % 4.0f%%" % (job, (float(pacifier)/samples * 100 )) + suffix
 
@@ -51,29 +54,51 @@ def run_simulation(experiment, events_description):
     print "Protein Prd rate:\t%s" % events_description["protein_prod"]["rate"]
     print "Protein Dis rate:\t%s" % events_description["protein_decay"]["rate"]
     print "Time to simulate:\t%s" % experiment["duration"]
-    print "\n" * njobs
+    
+    if experiment["pacifier_active"]:
+        print "\n" * njobs
 
     # Each element of this list represents a number of proteins created by one mRNA
     #timeseries = []
     #dataseries = []
 
+    # Want workers to ignore Keyboard interrupt
+    original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+    # Create the pool of workers
     pool = Pool(njobs)
+
+    # restore signals for the main process
+    signal.signal(signal.SIGINT, original_sigint_handler)
+
     data = {}
     time_s = {}
     data_s = {}
-
-    for job in range(njobs):
-        data[job] = pool.apply_async(run_batch, (experiment, events_description, njobs, job))
-
-    pool.close()
-    pool.join()
-
     timeseries, dataseries = [], []
 
-    for job in range(njobs):
-        time_s[job], data_s[job] = data[job].get()
-        timeseries += time_s[job]
-        dataseries += data_s[job]
+    try:
+        for job in range(njobs):
+            data[job] = pool.apply_async(run_batch, (experiment, events_description, njobs, job))
+
+        pool.close()
+
+        for job in range(njobs):
+            time_s[job], data_s[job] = data[job].get(experiment['hard_limit'])
+            timeseries += time_s[job]
+            dataseries += data_s[job]
+
+    except KeyboardInterrupt:
+        pool.terminate()
+        print "\n\nCaught KeyboardInterrupt, workers have been terminated\n"
+        timeseries, dataseries = [], []
+        raise SystemExit
+
+    except TimeoutError:
+        pool.terminate()
+        print "\n\nThe workers ran out of time. Terminating simulation.\n"
+        raise SystemExit
+
+    pool.join()
 
     print "\nRearranging arrays...\n\n"
     protein_number = []
@@ -81,7 +106,7 @@ def run_simulation(experiment, events_description):
     time = []
     pacifier = 0.0
     for i in range(int(np.round(experiment["duration"] / experiment["framestep"])) + 1):
-        if i >= int(np.ceil(pacifier)):
+        if i >= int(np.ceil(pacifier)) and experiment["pacifier_active"]:
             pacifier += experiment["duration"] / 100
             print "\033[FProgress: % 4d%%" % int(np.ceil(float(i) / experiment["duration"] * 100 ))
 
@@ -91,7 +116,7 @@ def run_simulation(experiment, events_description):
         for cid in range(len(timeseries)):
             protein_number[i].append(dataseries[cid][i]["protein"])
             mrna_number[i].append(dataseries[cid][i]["mrna"])
-    print "\033[FProgress: % 4d%%" % 100
+    #print "\033[FProgress: % 4d%%" % 100
 
     experiment_data = {"time": time, "protein": protein_number, "mrna": mrna_number}
 

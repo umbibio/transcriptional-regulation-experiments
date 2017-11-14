@@ -1,11 +1,13 @@
 #!/usr/bin/python
-import argparse, os
+import os
+import sys
+import argparse
 import time
 import numpy as np
 import matplotlib.pyplot as plt
 from simlib import gillespie, run_simulation, save_timeseries_histogram,\
                    save_datafile, save_last_histogram, calculate_results,\
-                   secondsToStr, plot_avg_vs_time
+                   seconds2str, plot_avg_vs_time
 
 def main(args):
     """The main method that runs the simulation"""
@@ -25,13 +27,18 @@ def main(args):
         "framestep": min(args["framestep"], args["duration"]),
         "molecule_to_plot": args["molecule_data"],
         "n_jobs": args["n_jobs"],
+        "pacifier_active": args["pacifier"],
+        "hard_limit": args["hard_limit"],
     }
 
+    if args["silent"]:
+        sys.stdout = open(os.devnull, 'w')
+
     events_description = {
-        "burst_arrival": {"rate": 10, "elem": "dna"},
-        "mrna_decay": {"rate": 2, "elem": "mrna"},
-        "protein_prod": {"rate": 15, "elem": "mrna"},
-        "protein_decay": {"rate": 0.05, "elem": "protein"},
+        "burst_arrival": {"rate": args["burst_arrival_rate"], "elem": "dna"},
+        "mrna_decay": {"rate": args["mrna_dis_rate"], "elem": "mrna"},
+        "protein_prod": {"rate": args["protein_prod_rate"], "elem": "mrna"},
+        "protein_decay": {"rate": args["protein_dis_rate"], "elem": "protein"},
     }
 
     exp_id = 'CP%.6d_mbd-%s_mbs%02.2f_kb%.1f_um%.1f_kp%.1f_up%.2f_T%07d_FS%03.2f_i%03d'\
@@ -56,7 +63,10 @@ def main(args):
         experiment_data = data[2]
         simulation_runned = False
     else:
-        experiment_data = run_simulation(experiment, events_description)
+        try:
+            experiment_data = run_simulation(experiment, events_description)
+        except (KeyboardInterrupt, SystemExit):
+            return 1
         simulation_runned = True
 
     end_time = time.time()
@@ -75,7 +85,7 @@ def main(args):
     results_str += "\t% 15.2f" % experiment["mean_burst_size"]
     results_str += "\t%s" % experiment["burst_size_distribution"]
     results_str += "\t%s" % experiment["exp_id"]
-    results_str += "\t%s" % secondsToStr(end_time - start_time)
+    results_str += "\t%s" % seconds2str(end_time - start_time)
     results_str += "\n"
     print results_str
 
@@ -89,29 +99,49 @@ def main(args):
 parser = argparse.ArgumentParser(description='Gillespi simulation.')
 
 # Main experiment arguments
-parser.add_argument('--n-cell', dest='cell_population', action='store',
+parser.add_argument('-n', '--n-cell', dest='cell_population', action='store',
                     required=True, type=int,
                     help='The number of cells in the simulation')
 
-parser.add_argument('--experiment-duration', dest='duration', action='store',
-                    required=False, default=1000, type=int,
+parser.add_argument('-d', '--experiment-duration', dest='duration',
+                    action='store', required=False, default=1000, type=int,
                     help='The stop time for the simulation')
 
-parser.add_argument('--redo-simulation', dest='redo_simulation', action='store_true',
-                    help='Force the execution of the simulation, even if data is saved for this parameters')
+parser.add_argument('-kb', '--burst-arrival-rate', dest='burst_arrival_rate',
+                    action='store', required=False, default=10.0, type=float,
+                    help='The rate for mRNA burst arrivals')
+
+parser.add_argument('-um', '--mrna-dis-rate', dest='mrna_dis_rate',
+                    action='store', required=False, default=2.0, type=float,
+                    help='The rate for mRNA disintegration')
+
+parser.add_argument('-kp', '--protein-prod-rate', dest='protein_prod_rate',
+                    action='store', required=False, default=15.0, type=float,
+                    help='The rate for protein production')
+
+parser.add_argument('-up', '--protein-dis-rate', dest='protein_dis_rate',
+                    action='store', required=False, default=0.05, type=float,
+                    help='The rate for protein disintegration')
+
+parser.add_argument('-r', '--redo-simulation', dest='redo_simulation',
+                    action='store_true',
+                    help=('Force the execution of the simulation, even if '
+                          'data is saved for this parameters'))
 
 # mRNA 
-parser.add_argument('--mean-burst-size', dest='mean_burst_size', action='store',
-                    required=True, type=float,
+parser.add_argument('-mbs', '--mean-burst-size', dest='mean_burst_size',
+                    action='store', required=True, type=float,
                     help='The average size of mRNA bursts')
 
-parser.add_argument('--burst-size-distribution', dest='burst_size_distribution', action='store',
+parser.add_argument('-bsd', '--burst-size-distribution',
+                    dest='burst_size_distribution', action='store',
                     choices=['geometric', 'conditional_geometric', 'delta'],
                     required=False, default="conditional_geometric", type=str,
                     help='The type of distribution for the mRNA bursts')
 
 # Plots
-parser.add_argument('--skip-final-plot', dest='skip_final_plot', action='store_true',
+parser.add_argument('-nfp', '--skip-final-plot', dest='skip_final_plot',
+                    action='store_true',
                     help='Do not generate the plot at the end of simulation')
 
 parser.add_argument('--molecule-data', dest='molecule_data', action='store',
@@ -119,23 +149,37 @@ parser.add_argument('--molecule-data', dest='molecule_data', action='store',
                     required=False, default="protein", type=str,
                     help='Data to use for the histogram plots')
 
-parser.add_argument('--plot-timeseries', dest='plot_timeseries', action='store_true',
+parser.add_argument('-pts', '--plot-timeseries', dest='plot_timeseries',
+                    action='store_true',
                     help='Save PNG sequence of the simulation\'s timeseries')
 
-parser.add_argument('--timeseries-framestep', dest='framestep', action='store',
-                    required=False, default=50, type=float,
+parser.add_argument('-tsfs', '--timeseries-framestep', dest='framestep',
+                    action='store', required=False, default=50, type=float,
                     help='Time intervals between data frames')
 
-parser.add_argument('--results-file', dest='results_file', type=argparse.FileType('a'),
+parser.add_argument('-rf', '--results-file', dest='results_file',
+                    type=argparse.FileType('a'),
                     default=None)
 
 # Multiprocessing jobs and repetitions
-parser.add_argument('--n-jobs', dest='n_jobs', action='store',
+parser.add_argument('-nj', '--n-jobs', dest='n_jobs', action='store',
                     required=False, default=4, type=int,
                     help='The number of CPUs to use')
 
-parser.add_argument('--i-repetition', dest='i_repetition', action='store',
-                    required=False, default=1, type=int,
-                    help='The number of CPUs to use')
+parser.add_argument('-l', '--hard-time-limit', dest='hard_limit', action='store',
+                    required=False, default=86400, type=int,
+                    help='Stops the simulation after this many seconds')
 
-main(vars(parser.parse_args()))
+parser.add_argument('-i', '--i-repetition', dest='i_repetition', action='store',
+                    required=False, default=1, type=int,
+                    help='The id of experiment repetition')
+
+parser.add_argument('-q', '--quiet', '--no-pacifier', dest='pacifier',
+                    action='store_false',
+                    help='Supress pacifier output')
+
+parser.add_argument('-s', '--silent', dest='silent', action='store_true',
+                    help='Supress all output')
+
+if __name__ == "__main__":
+    main(vars(parser.parse_args()))
