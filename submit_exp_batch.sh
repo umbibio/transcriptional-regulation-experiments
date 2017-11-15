@@ -11,6 +11,9 @@ EXPD=150
 HL=180      # 3 hours
 NCPU=16
 
+# load proper modules
+module load python/2.7.9_packages/matplotlib/1.4.3
+
 for BDIST in {"conditional_geometric"}
 do
     for MBS in {1,2,4,6,8,12,16}

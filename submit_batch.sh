@@ -13,6 +13,10 @@ EXPD=150
 HL=180      # 3 hours
 NCPU=16
 
+# load proper modules
+module load python/2.7.9_packages/matplotlib/1.4.3
+
+
 if [ -z $MBS ] || [ ! $MBS -gt 0 ]; then
     echo "ERROR - Need to specify first argument: Mean Burst Size"
     exit 1
