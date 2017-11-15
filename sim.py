@@ -90,7 +90,7 @@ def main(args):
     print results_str
 
 
-    if args["results_file"] is not None and simulation_runned:
+    if args["results_file"] is not None:
         args["results_file"].write(results_str)
 
     print "\nDone!\n"
