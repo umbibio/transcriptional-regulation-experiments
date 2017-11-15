@@ -14,7 +14,7 @@ NCPU=16
 # load proper modules
 module load python/2.7.9_packages/matplotlib/1.4.3
 
-for BDIST in {"conditional_geometric"}
+for BDIST in "conditional_geometric"
 do
     for MBS in {1,2,4,6,8,12,16}
     do
@@ -35,7 +35,7 @@ done
 # Don't need delta distrubutions now
 exit 0
 
-for BDIST in {"delta"}
+for BDIST in "delta"
 do
     for MBS in {1,2}
     do
