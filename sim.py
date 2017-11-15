@@ -24,7 +24,8 @@ def main(args):
             "mrna": 0,
             "protein": 0,
         },
-        "framestep": min(args["framestep"], args["duration"]),
+        "framestep": (float(args["duration"]) /4 if args["framestep"] == 0 \
+                      else args["framestep"]),
         "molecule_to_plot": args["molecule_data"],
         "n_jobs": args["n_jobs"],
         "pacifier_active": args["pacifier"],
@@ -154,7 +155,7 @@ parser.add_argument('-pts', '--plot-timeseries', dest='plot_timeseries',
                     help='Save PNG sequence of the simulation\'s timeseries')
 
 parser.add_argument('-tsfs', '--timeseries-framestep', dest='framestep',
-                    action='store', required=False, default=50, type=float,
+                    action='store', required=False, default=0, type=float,
                     help='Time intervals between data frames')
 
 parser.add_argument('-rf', '--results-file', dest='results_file',
