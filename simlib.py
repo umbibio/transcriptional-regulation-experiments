@@ -54,7 +54,7 @@ def run_simulation(experiment, events_description):
     print "Protein Prd rate:\t%s" % events_description["protein_prod"]["rate"]
     print "Protein Dis rate:\t%s" % events_description["protein_decay"]["rate"]
     print "Time to simulate:\t%s" % experiment["duration"]
-    
+
     if experiment["pacifier_active"]:
         print "\n" * njobs
 
@@ -233,7 +233,7 @@ def save_last_histogram(events_description, experiment, experiment_data, max_bin
     max_bin = np.ceil(mean * 4)
     bin_size = max([int(np.ceil(float(max_bin) / 50)), 1])
 
-    number, bins, patches = plt.hist(final_molecule_n, bins=xrange(0, bin_size*50, bin_size), normed=True)
+    number, bins, patches = plt.hist(final_molecule_n, bins=xrange(0, bin_size*50, bin_size), density=True)
     max_height = np.amax(number) * 1.2
     plt.clf()
 
@@ -246,7 +246,7 @@ def save_timeseries_histogram(events_description, experiment, experiment_data, m
     mean = np.mean(final_molecule_n)
     max_bin = np.ceil(mean * 4)
     bin_size = max([int(float(max_bin) / 50), 1])
-    number, bins, patches = plt.hist(final_molecule_n, bins=xrange(0, bin_size*50, bin_size), normed=True)
+    number, bins, patches = plt.hist(final_molecule_n, bins=xrange(0, bin_size*50, bin_size), density=True)
     max_height = np.amax(number) * 1.2
     plt.clf()
 
@@ -273,7 +273,7 @@ def save_histogram(events_description, experiment, clock_time, protein_numbers, 
 
     number, bins, patches = plt.hist(protein_numbers,
                                      bins=xrange(0, bin_size*50, bin_size),
-                                     normed=True,
+                                     density=True,
                                      label='Simulated distribution')
 
     ax = plt.gca()
@@ -305,9 +305,9 @@ def save_histogram(events_description, experiment, clock_time, protein_numbers, 
         directory = './figs/tseries/%s/%s' % (experiment["exp_id"], experiment["molecule_to_plot"])
         if not os.path.exists(directory):
             os.makedirs(directory)
-        fig_path = directory + '/T%07d.png' % (clock_time)
+        fig_path = directory + '/T%010.3f.png' % (clock_time)
     else:
-        fig_path = './figs/%s_%s_T%07d.png' % (experiment["molecule_to_plot"], experiment["exp_id"], clock_time)
+        fig_path = './figs/%s_%s_T%010.3f.png' % (experiment["molecule_to_plot"], experiment["exp_id"], clock_time)
 
     print "\rSaving fig to: %s" % fig_path
     fig1.savefig(fig_path)
