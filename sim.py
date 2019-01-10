@@ -22,6 +22,8 @@ def main(args):
         "initial_population": {
             "dna": 1,
             "mrna": 0,
+            "mrna1": 0,
+            "mrna2": 0,
             "protein": 0,
         },
         "framestep": (float(args["duration"]) /4 if args["framestep"] == 0 \
@@ -37,7 +39,8 @@ def main(args):
 
     events_description = {
         "burst_arrival": {"rate": args["burst_arrival_rate"], "elem": "dna"},
-        "mrna_decay": {"rate": args["mrna_dis_rate"], "elem": "mrna"},
+        "mrna_sene1": {"rate": args["mrna_dis_rate"]/2, "elem": "mrna1"},
+        "mrna_decay": {"rate": args["mrna_dis_rate"]/2, "elem": "mrna2"},
         "protein_prod": {"rate": args["protein_prod_rate"], "elem": "mrna"},
         "protein_decay": {"rate": args["protein_dis_rate"], "elem": "protein"},
     }
@@ -46,10 +49,10 @@ def main(args):
               % (experiment["cell_population"],
                  experiment["burst_size_distribution"],
                  experiment["mean_burst_size"],
-                 events_description["burst_arrival"]["rate"],
-                 events_description["mrna_decay"]["rate"],
-                 events_description["protein_prod"]["rate"],
-                 events_description["protein_decay"]["rate"],
+                 args["burst_arrival_rate"],
+                 args["mrna_dis_rate"],
+                 args["protein_prod_rate"],
+                 args["protein_dis_rate"],
                  experiment["duration"],
                  experiment["framestep"],
                  args["i_repetition"])

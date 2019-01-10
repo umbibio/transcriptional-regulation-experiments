@@ -50,7 +50,7 @@ def run_simulation(experiment, events_description):
     print "Total cells:\t\t%s" % experiment["cell_population"]
     print "Mean mRNA Burst Size:\t%s" % experiment["mean_burst_size"]
     print "mRNA BurstArrvl rate:\t%s" % (events_description["burst_arrival"]["rate"])
-    print "mRNA Dis rate:\t\t%s" % events_description["mrna_decay"]["rate"]
+    print "mRNA Dis rate:\t\t%s" % events_description["mrna_decay"]["rate"]*2
     print "Protein Prd rate:\t%s" % events_description["protein_prod"]["rate"]
     print "Protein Dis rate:\t%s" % events_description["protein_decay"]["rate"]
     print "Time to simulate:\t%s" % experiment["duration"]
@@ -158,9 +158,12 @@ def gillespie(experiment, events_description):
     event_probability = {}
     event_threshold = {}
 
+
+    for molecule_name, initial_number in experiment["initial_population"].items():
+        molecule_population[molecule_name] = initial_number
+
     for event_name in events_description:
         elem = events_description[event_name]["elem"]
-        molecule_population[elem] = experiment["initial_population"][elem]
         event_generator[event_name] = elem
 
         rate = float(events_description[event_name]["rate"])
@@ -175,10 +178,11 @@ def gillespie(experiment, events_description):
 
     events_order = [
         "burst_arrival",
+        "mrna_sene1",
         "mrna_decay",
         "protein_prod",
-        "protein_decay"
-        ]
+        "protein_decay",
+    ]
 
     stop_time = experiment["initial_time"] + experiment["duration"]
     while clock_time < stop_time and effective_rate > 0.0:
@@ -200,9 +204,15 @@ def gillespie(experiment, events_description):
 
         choose_event = np.random.uniform()
         if choose_event < event_threshold["burst_arrival"]:
-            molecule_population["mrna"] += distributions[experiment["burst_size_distribution"]]()
+            arrival_size = distributions[experiment["burst_size_distribution"]]()
+            molecule_population["mrna"] += arrival_size
+            molecule_population["mrna1"] += arrival_size
+        elif choose_event < event_threshold["mrna_sene1"]:
+            molecule_population["mrna1"] -= 1
+            molecule_population["mrna2"] += 1
         elif choose_event < event_threshold["mrna_decay"]:
             molecule_population["mrna"] -= 1
+            molecule_population["mrna2"] -= 1
         elif choose_event < event_threshold["protein_prod"]:
             molecule_population["protein"] += 1
         elif choose_event < event_threshold["protein_decay"]:
