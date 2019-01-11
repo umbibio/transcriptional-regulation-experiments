@@ -36,12 +36,31 @@ def run_batch(experiment, events_description, njobs, job):
 
     np.random.seed()
 
+    prob_success = {}
+    prob_success["conditional_geometric"] = 1.0 / experiment["mean_burst_size"]
+    prob_success["geometric"] = 1.0 / (experiment["mean_burst_size"] + 1)
+
+    def geometric_distribution():
+        return int(np.random.geometric(prob_success["geometric"]) - 1)
+
+    def conditional_geometric_distribution():
+        return np.random.geometric(prob_success["conditional_geometric"])
+
+    def delta_distribution():
+        return experiment["mean_burst_size"]
+
+    distributions = {
+        "delta": delta_distribution,
+        "conditional_geometric": conditional_geometric_distribution,
+        "geometric": geometric_distribution,
+    }
+
     for iteration in range(samples):
         if iteration >= progress and experiment["progress_active"]:
             progress += progress_inc
             print(prefix + "Job #: %s\tProgress: % 4.0f%%" % (job, (progress * 100 // samples )) + suffix)
 
-        time_list, data_list = gillespie(experiment, events_description)
+        time_list, data_list = gillespie(experiment, events_description, distributions)
         timeseries.append(time_list)
         dataseries.append(data_list)
     
@@ -134,32 +153,7 @@ def run_simulation(experiment, events_description):
     save_datafile(events_description, experiment, experiment_data)
     return experiment_data
 
-def gillespie(experiment, events_description):
-
-    def calc_effective_rate():
-        effective_rate = 0.0
-        for event in events_description:
-            effective_rate += molecule_population[event_generator[event]] * event_rate[event]
-        return effective_rate
-
-    prob_success = {}
-    prob_success["conditional_geometric"] = 1.0 / experiment["mean_burst_size"]
-    prob_success["geometric"] = 1.0 / (experiment["mean_burst_size"] + 1)
-
-    def geometric_distribution():
-        return int(np.random.geometric(prob_success["geometric"]) - 1)
-
-    def conditional_geometric_distribution():
-        return np.random.geometric(prob_success["conditional_geometric"])
-
-    def delta_distribution():
-        return experiment["mean_burst_size"]
-
-    distributions = {
-        "delta": delta_distribution,
-        "conditional_geometric": conditional_geometric_distribution,
-        "geometric": geometric_distribution,
-    }
+def gillespie(experiment, events_description, distributions):
 
     clock_time = experiment["initial_time"]
     molecule_population = {}
@@ -173,15 +167,13 @@ def gillespie(experiment, events_description):
         molecule_population[molecule_name] = initial_number
 
     for event_name in events_description:
-        elem = events_description[event_name]["elem"]
-        event_generator[event_name] = elem
+        event_generator[event_name] = events_description[event_name]["elem"]
+        event_rate[event_name] = float(events_description[event_name]["rate"])
 
-        rate = float(events_description[event_name]["rate"])
-        event_rate[event_name] = rate
-        event_probability[event_name] = 0.0
-        event_threshold[event_name] = 0.0
+    effective_rate = 0.0
+    for event in events_description:
+        effective_rate += molecule_population[event_generator[event]] * event_rate[event]
 
-    effective_rate = calc_effective_rate()
     timeframe = 0.0
     time = []
     data = []
@@ -229,7 +221,9 @@ def gillespie(experiment, events_description):
             molecule_population["protein"] -= 1
 
         clock_time += np.random.exponential(1.0 / effective_rate)
-        effective_rate = calc_effective_rate()
+        effective_rate = 0.0
+        for event in events_description:
+            effective_rate += molecule_population[event_generator[event]] * event_rate[event]
 
     while clock_time >= timeframe:
         time.append(timeframe)
