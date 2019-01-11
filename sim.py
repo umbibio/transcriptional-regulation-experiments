@@ -96,7 +96,7 @@ def main(args):
     if args["results_file"] is not None:
         args["results_file"].write(results_str)
 
-    print "\nDone!\n"
+    print("\nDone!\n")
 
 
 parser = argparse.ArgumentParser(description='Gillespi simulation.')

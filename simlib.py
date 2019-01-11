@@ -6,8 +6,13 @@ from multiprocessing import Pool, TimeoutError
 import matplotlib.pyplot as plt
 import numpy as np
 
+# python2 -> python3 compatibility
+from functools import reduce
+
 def seconds2str(time):
     """Format elapsed time"""
+
+    # python2 implementation was using reduce. Import it from functools
     return "%d:%02d:%02d.%03d" % \
         reduce(lambda ll, b: divmod(ll[0], b) + ll[1:],
                [(time * 1000, ), 1000, 60, 60])
@@ -18,7 +23,7 @@ def run_batch(experiment, events_description, njobs, job):
     timeseries = []
     dataseries = []
     pacifier = 0.0
-    samples = experiment["cell_population"] / njobs
+    samples = experiment["cell_population"] // njobs
     pacifier_inc = float(max(100, samples)) / 100
 
     prefix = "\033[F" * (njobs - job)
@@ -29,7 +34,7 @@ def run_batch(experiment, events_description, njobs, job):
     for iteration in range(samples):
         if iteration >= np.ceil(pacifier) and experiment["pacifier_active"]:
             pacifier += pacifier_inc
-            print prefix + "Job #: %s\tProgress: % 4.0f%%" % (job, (float(pacifier)/samples * 100 )) + suffix
+            print(prefix + "Job #: %s\tProgress: % 4.0f%%" % (job, (float(pacifier)/samples * 100 )) + suffix)
 
         time_list, data_list = gillespie(experiment, events_description)
         timeseries.append(time_list)
@@ -46,17 +51,17 @@ def run_simulation(experiment, events_description):
         if not os.path.exists('./' + dirname):
             os.makedirs('./' + dirname)
 
-    print "\nStarting simulation...\n"
-    print "Total cells:\t\t%s" % experiment["cell_population"]
-    print "Mean mRNA Burst Size:\t%s" % experiment["mean_burst_size"]
-    print "mRNA BurstArrvl rate:\t%s" % (events_description["burst_arrival"]["rate"])
-    print "mRNA Dis rate:\t\t%s" % (events_description["mrna_decay"]["rate"]/2)
-    print "Protein Prd rate:\t%s" % events_description["protein_prod"]["rate"]
-    print "Protein Dis rate:\t%s" % events_description["protein_decay"]["rate"]
-    print "Time to simulate:\t%s" % experiment["duration"]
+    print("\nStarting simulation...\n")
+    print("Total cells:\t\t%s" % experiment["cell_population"])
+    print("Mean mRNA Burst Size:\t%s" % experiment["mean_burst_size"])
+    print("mRNA BurstArrvl rate:\t%s" % (events_description["burst_arrival"]["rate"]))
+    print("mRNA Dis rate:\t\t%s" % (events_description["mrna_decay"]["rate"]/2))
+    print("Protein Prd rate:\t%s" % events_description["protein_prod"]["rate"])
+    print("Protein Dis rate:\t%s" % events_description["protein_decay"]["rate"])
+    print("Time to simulate:\t%s" % experiment["duration"])
 
     if experiment["pacifier_active"]:
-        print "\n" * njobs
+        print("\n" * njobs)
 
     # Each element of this list represents a number of proteins created by one mRNA
     #timeseries = []
@@ -89,18 +94,18 @@ def run_simulation(experiment, events_description):
 
     except KeyboardInterrupt:
         pool.terminate()
-        print "\n\nCaught KeyboardInterrupt, workers have been terminated\n"
+        print("\n\nCaught KeyboardInterrupt, workers have been terminated\n")
         timeseries, dataseries = [], []
         raise SystemExit
 
     except TimeoutError:
         pool.terminate()
-        print "\n\nThe workers ran out of time. Terminating simulation.\n"
+        print("\n\nThe workers ran out of time. Terminating simulation.\n")
         raise SystemExit
 
     pool.join()
 
-    print "\nRearranging arrays...\n\n"
+    print("\nRearranging arrays...\n\n")
     protein_number = []
     mrna_number = []
     time = []
@@ -108,7 +113,7 @@ def run_simulation(experiment, events_description):
     for i in range(int(np.round(experiment["duration"] / experiment["framestep"])) + 1):
         if i >= int(np.ceil(pacifier)) and experiment["pacifier_active"]:
             pacifier += experiment["duration"] / 100
-            print "\033[FProgress: % 4d%%" % int(np.ceil(float(i) / experiment["duration"] * 100 ))
+            # print("\033[FProgress: % 4d%%" % int(np.ceil(float(i) / experiment["duration"] * 100 )))
 
         time.append(timeseries[0][i])
         protein_number.append([])
@@ -116,11 +121,10 @@ def run_simulation(experiment, events_description):
         for cid in range(len(timeseries)):
             protein_number[i].append(dataseries[cid][i]["protein"])
             mrna_number[i].append(dataseries[cid][i]["mrna"])
-    #print "\033[FProgress: % 4d%%" % 100
 
     experiment_data = {"time": time, "protein": protein_number, "mrna": mrna_number}
 
-    print "\nSaving datafiles..."
+    print("\nSaving datafiles...")
     save_datafile(events_description, experiment, experiment_data)
     return experiment_data
 
@@ -320,7 +324,7 @@ def save_histogram(events_description, experiment, clock_time, protein_numbers, 
     else:
         fig_path = './figs/%s_%s_T%010.3f.png' % (experiment["molecule_to_plot"], experiment["exp_id"], clock_time)
 
-    print "\rSaving fig to: %s" % fig_path
+    print("\rSaving fig to: %s" % fig_path)
     fig1.savefig(fig_path)
 
     gc.collect()
@@ -328,7 +332,7 @@ def save_histogram(events_description, experiment, clock_time, protein_numbers, 
 def plot_avg_vs_time(experiment_data):
     avgs = {}
     for key in experiment_data:
-        if key <> "time":
+        if key != "time":
             avgs[key] = []
 
     for i, time in enumerate(experiment_data["time"]):
@@ -356,7 +360,7 @@ def calculate_results(experiment_data):
     mrna_var = np.var(final_mrna_numbers)
     mrna_ff = mrna_var / mrna_mean
     
-    print "total_cells\tmrna_mean\tmrna_var\tmrna_ff\tprotein_mean\tprotein_var\tprotein_ff"
-    print "% 11d\t% 9.2f\t% 8.2f\t% 7.2f\t% 12.2f\t% 11.2f\t% 10.2f" % (total_cells, mrna_mean, mrna_var, mrna_ff, protein_mean, protein_var, protein_ff)
+    print("total_cells\tmrna_mean\tmrna_var\tmrna_ff\tprotein_mean\tprotein_var\tprotein_ff")
+    print("% 11d\t% 9.2f\t% 8.2f\t% 7.2f\t% 12.2f\t% 11.2f\t% 10.2f" % (total_cells, mrna_mean, mrna_var, mrna_ff, protein_mean, protein_var, protein_ff))
 
     return [total_cells, mrna_mean, mrna_var, mrna_ff, protein_mean, protein_var, protein_ff]
