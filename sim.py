@@ -39,8 +39,8 @@ def main(args):
 
     events_description = {
         "burst_arrival": {"rate": args["burst_arrival_rate"], "elem": "dna"},
-        "mrna_sene1": {"rate": args["mrna_dis_rate"]/2, "elem": "mrna1"},
-        "mrna_decay": {"rate": args["mrna_dis_rate"]/2, "elem": "mrna2"},
+        "mrna_sene1": {"rate": args["mrna_dis_rate"]*2, "elem": "mrna1"},
+        "mrna_decay": {"rate": args["mrna_dis_rate"]*2, "elem": "mrna2"},
         "protein_prod": {"rate": args["protein_prod_rate"], "elem": "mrna"},
         "protein_decay": {"rate": args["protein_dis_rate"], "elem": "protein"},
     }
@@ -91,7 +91,6 @@ def main(args):
     results_str += "\t%s" % experiment["exp_id"]
     results_str += "\t%s" % seconds2str(end_time - start_time)
     results_str += "\n"
-    print results_str
 
 
     if args["results_file"] is not None:

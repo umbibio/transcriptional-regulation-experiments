@@ -50,7 +50,7 @@ def run_simulation(experiment, events_description):
     print "Total cells:\t\t%s" % experiment["cell_population"]
     print "Mean mRNA Burst Size:\t%s" % experiment["mean_burst_size"]
     print "mRNA BurstArrvl rate:\t%s" % (events_description["burst_arrival"]["rate"])
-    print "mRNA Dis rate:\t\t%s" % events_description["mrna_decay"]["rate"]*2
+    print "mRNA Dis rate:\t\t%s" % (events_description["mrna_decay"]["rate"]/2)
     print "Protein Prd rate:\t%s" % events_description["protein_prod"]["rate"]
     print "Protein Dis rate:\t%s" % events_description["protein_decay"]["rate"]
     print "Time to simulate:\t%s" % experiment["duration"]
@@ -233,6 +233,7 @@ def gillespie(experiment, events_description):
 def save_datafile(events_description, experiment, experiment_data):
     filepath = './data/%s' % (experiment["exp_id"])
     np.save(filepath, [events_description, experiment, experiment_data])
+    np.save('./data/last', [events_description, experiment, experiment_data])
 
 def save_last_histogram(events_description, experiment, experiment_data, max_bin=None, max_height=None, show_plot=False):
     
@@ -301,7 +302,7 @@ def save_histogram(events_description, experiment, clock_time, protein_numbers, 
                  experiment["burst_size_distribution"],
                  experiment["mean_burst_size"],
                  events_description["burst_arrival"]["rate"],
-                 events_description["mrna_decay"]["rate"],
+                 events_description["mrna_decay"]["rate"]/2,
                  events_description["protein_prod"]["rate"],
                  events_description["protein_decay"]["rate"],
                  clock_time,
@@ -354,5 +355,8 @@ def calculate_results(experiment_data):
     mrna_mean = np.mean(final_mrna_numbers)
     mrna_var = np.var(final_mrna_numbers)
     mrna_ff = mrna_var / mrna_mean
+    
+    print "total_cells\tmrna_mean\tmrna_var\tmrna_ff\tprotein_mean\tprotein_var\tprotein_ff"
+    print "% 11d\t% 9.2f\t% 8.2f\t% 7.2f\t% 12.2f\t% 11.2f\t% 10.2f" % (total_cells, mrna_mean, mrna_var, mrna_ff, protein_mean, protein_var, protein_ff)
 
     return [total_cells, mrna_mean, mrna_var, mrna_ff, protein_mean, protein_var, protein_ff]
