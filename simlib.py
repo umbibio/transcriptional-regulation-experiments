@@ -9,6 +9,11 @@ import numpy as np
 # python2 -> python3 compatibility
 from functools import reduce
 
+try:
+    xrange
+except NameError:
+    xrange = range
+
 def seconds2str(time):
     """Format elapsed time"""
 
@@ -22,9 +27,9 @@ def run_batch(experiment, events_description, njobs, job):
     a job number and will return the corresponding partial results"""
     timeseries = []
     dataseries = []
-    pacifier = 0.0
+    progress = 0.0
     samples = experiment["cell_population"] // njobs
-    pacifier_inc = float(max(100, samples)) / 100
+    progress_inc = float(max(100, samples)) / 100
 
     prefix = "\033[F" * (njobs - job)
     suffix = "\n" * (njobs - job - 1)
@@ -32,9 +37,9 @@ def run_batch(experiment, events_description, njobs, job):
     np.random.seed()
 
     for iteration in range(samples):
-        if iteration >= np.ceil(pacifier) and experiment["pacifier_active"]:
-            pacifier += pacifier_inc
-            print(prefix + "Job #: %s\tProgress: % 4.0f%%" % (job, (float(pacifier)/samples * 100 )) + suffix)
+        if iteration >= np.ceil(progress) and experiment["progress_active"]:
+            progress += progress_inc
+            print(prefix + "Job #: %s\tProgress: % 4.0f%%" % (job, (float(progress)/samples * 100 )) + suffix)
 
         time_list, data_list = gillespie(experiment, events_description)
         timeseries.append(time_list)
@@ -60,7 +65,7 @@ def run_simulation(experiment, events_description):
     print("Protein Dis rate:\t%s" % events_description["protein_decay"]["rate"])
     print("Time to simulate:\t%s" % experiment["duration"])
 
-    if experiment["pacifier_active"]:
+    if experiment["progress_active"]:
         print("\n" * njobs)
 
     # Each element of this list represents a number of proteins created by one mRNA
@@ -109,11 +114,12 @@ def run_simulation(experiment, events_description):
     protein_number = []
     mrna_number = []
     time = []
-    pacifier = 0.0
-    for i in range(int(np.round(experiment["duration"] / experiment["framestep"])) + 1):
-        if i >= int(np.ceil(pacifier)) and experiment["pacifier_active"]:
-            pacifier += experiment["duration"] / 100
-            # print("\033[FProgress: % 4d%%" % int(np.ceil(float(i) / experiment["duration"] * 100 )))
+    progress = 0
+    total_steps = int(experiment["duration"] // experiment["framestep"])
+    for i in range(total_steps + 1):
+        if i >= progress and experiment["progress_active"]:
+            progress += total_steps // 100
+            print("\033[FProgress: % 4d%%" % (i * 100 // total_steps) )
 
         time.append(timeseries[0][i])
         protein_number.append([])

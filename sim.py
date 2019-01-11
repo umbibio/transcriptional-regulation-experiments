@@ -30,7 +30,7 @@ def main(args):
                       else args["framestep"]),
         "molecule_to_plot": args["molecule_data"],
         "n_jobs": args["n_jobs"],
-        "pacifier_active": args["pacifier"],
+        "progress_active": args["progress"],
         "hard_limit": args["hard_limit"],
     }
 
@@ -177,9 +177,9 @@ parser.add_argument('-i', '--i-repetition', dest='i_repetition', action='store',
                     required=False, default=1, type=int,
                     help='The id of experiment repetition')
 
-parser.add_argument('-q', '--quiet', '--no-pacifier', dest='pacifier',
+parser.add_argument('-q', '--quiet', '--no-progress', dest='progress',
                     action='store_false',
-                    help='Supress pacifier output')
+                    help='Supress progress output')
 
 parser.add_argument('-s', '--silent', dest='silent', action='store_true',
                     help='Supress all output')
