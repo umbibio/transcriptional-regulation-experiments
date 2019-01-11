@@ -1,8 +1,9 @@
-simlib.pyc
-results.dat
+*.pyc
+*.dat
+*.ipynb
 figs/*
 data/*
 results/*
 trash/*
 vids/*
-.vscode/settings.json
+.vscode/*
