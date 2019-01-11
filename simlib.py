@@ -27,9 +27,9 @@ def run_batch(experiment, events_description, njobs, job):
     a job number and will return the corresponding partial results"""
     timeseries = []
     dataseries = []
-    progress = 0.0
+    progress = 0
     samples = experiment["cell_population"] // njobs
-    progress_inc = float(max(100, samples)) / 100
+    progress_inc = max(100, samples) // 100
 
     prefix = "\033[F" * (njobs - job)
     suffix = "\n" * (njobs - job - 1)
@@ -37,9 +37,9 @@ def run_batch(experiment, events_description, njobs, job):
     np.random.seed()
 
     for iteration in range(samples):
-        if iteration >= np.ceil(progress) and experiment["progress_active"]:
+        if iteration >= progress and experiment["progress_active"]:
             progress += progress_inc
-            print(prefix + "Job #: %s\tProgress: % 4.0f%%" % (job, (float(progress)/samples * 100 )) + suffix)
+            print(prefix + "Job #: %s\tProgress: % 4.0f%%" % (job, (progress * 100 // samples )) + suffix)
 
         time_list, data_list = gillespie(experiment, events_description)
         timeseries.append(time_list)
