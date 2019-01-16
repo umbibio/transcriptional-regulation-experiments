@@ -79,7 +79,7 @@ def run_simulation(experiment, events_description):
     print("Total cells:\t\t%s" % experiment["cell_population"])
     print("Mean mRNA Burst Size:\t%s" % experiment["mean_burst_size"])
     print("mRNA BurstArrvl rate:\t%s" % (events_description["burst_arrival"]["rate"]))
-    print("mRNA Dis rate:\t\t%s" % (events_description["mrna_decay"]["rate"]/2))
+    print("mRNA Dis rate:\t\t%s" % (events_description["mrna_decay"]["rate"]/10))
     print("Protein Prd rate:\t%s" % events_description["protein_prod"]["rate"])
     print("Protein Dis rate:\t%s" % events_description["protein_decay"]["rate"])
     print("Time to simulate:\t%s" % experiment["duration"])
@@ -192,8 +192,16 @@ def gillespie(experiment, events_description, distributions):
 
     events_order = [
         "burst_arrival",
-        "mrna_sene1",
         "mrna_decay",
+        "mrna_decay2",
+        "mrna_decay3",
+        "mrna_decay4",
+        "mrna_decay5",
+        "mrna_decay6",
+        "mrna_decay7",
+        "mrna_decay8",
+        "mrna_decay9",
+        "mrna_decay10",
         "protein_prod",
         "protein_decay",
     ]
@@ -229,12 +237,36 @@ def gillespie(experiment, events_description, distributions):
             arrival_size = distributions[experiment["burst_size_distribution"]]()
             molecule_population["mrna"] += arrival_size
             molecule_population["mrna1"] += arrival_size
-        elif choose_event < event_threshold["mrna_sene1"]:
+        elif choose_event < event_threshold["mrna_decay"]:
             molecule_population["mrna1"] -= 1
             molecule_population["mrna2"] += 1
-        elif choose_event < event_threshold["mrna_decay"]:
-            molecule_population["mrna"] -= 1
+        elif choose_event < event_threshold["mrna_decay2"]:
             molecule_population["mrna2"] -= 1
+            molecule_population["mrna3"] += 1
+        elif choose_event < event_threshold["mrna_decay3"]:
+            molecule_population["mrna3"] -= 1
+            molecule_population["mrna4"] += 1
+        elif choose_event < event_threshold["mrna_decay4"]:
+            molecule_population["mrna4"] -= 1
+            molecule_population["mrna5"] += 1
+        elif choose_event < event_threshold["mrna_decay5"]:
+            molecule_population["mrna5"] -= 1
+            molecule_population["mrna6"] += 1
+        elif choose_event < event_threshold["mrna_decay6"]:
+            molecule_population["mrna6"] -= 1
+            molecule_population["mrna7"] += 1
+        elif choose_event < event_threshold["mrna_decay7"]:
+            molecule_population["mrna7"] -= 1
+            molecule_population["mrna8"] += 1
+        elif choose_event < event_threshold["mrna_decay8"]:
+            molecule_population["mrna8"] -= 1
+            molecule_population["mrna9"] += 1
+        elif choose_event < event_threshold["mrna_decay9"]:
+            molecule_population["mrna9"] -= 1
+            molecule_population["mrna10"] += 1
+        elif choose_event < event_threshold["mrna_decay10"]:
+            molecule_population["mrna10"] -= 1
+            molecule_population["mrna"] -= 1
         elif choose_event < event_threshold["protein_prod"]:
             molecule_population["protein"] += 1
         elif choose_event <= event_threshold["protein_decay"]:
@@ -329,7 +361,7 @@ def save_histogram(events_description, experiment, clock_time, protein_numbers, 
                  experiment["burst_size_distribution"],
                  experiment["mean_burst_size"],
                  events_description["burst_arrival"]["rate"],
-                 events_description["mrna_decay"]["rate"]/2,
+                 events_description["mrna_decay"]["rate"]/10,
                  events_description["protein_prod"]["rate"],
                  events_description["protein_decay"]["rate"],
                  clock_time,

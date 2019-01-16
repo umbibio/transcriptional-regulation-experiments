@@ -24,6 +24,14 @@ def main(args):
             "mrna": 0,
             "mrna1": 0,
             "mrna2": 0,
+            "mrna3": 0,
+            "mrna4": 0,
+            "mrna5": 0,
+            "mrna6": 0,
+            "mrna7": 0,
+            "mrna8": 0,
+            "mrna9": 0,
+            "mrna10": 0,
             "protein": 0,
         },
         "framestep": (float(args["duration"]) /4 if args["framestep"] == 0 \
@@ -39,8 +47,16 @@ def main(args):
 
     events_description = {
         "burst_arrival": {"rate": args["burst_arrival_rate"], "elem": "dna"},
-        "mrna_sene1": {"rate": args["mrna_dis_rate"]*2, "elem": "mrna1"},
-        "mrna_decay": {"rate": args["mrna_dis_rate"]*2, "elem": "mrna2"},
+        "mrna_decay": {"rate": args["mrna_dis_rate"]*10, "elem": "mrna1"},
+        "mrna_decay2": {"rate": args["mrna_dis_rate"]*10, "elem": "mrna2"},
+        "mrna_decay3": {"rate": args["mrna_dis_rate"]*10, "elem": "mrna3"},
+        "mrna_decay4": {"rate": args["mrna_dis_rate"]*10, "elem": "mrna4"},
+        "mrna_decay5": {"rate": args["mrna_dis_rate"]*10, "elem": "mrna5"},
+        "mrna_decay6": {"rate": args["mrna_dis_rate"]*10, "elem": "mrna6"},
+        "mrna_decay7": {"rate": args["mrna_dis_rate"]*10, "elem": "mrna7"},
+        "mrna_decay8": {"rate": args["mrna_dis_rate"]*10, "elem": "mrna8"},
+        "mrna_decay9": {"rate": args["mrna_dis_rate"]*10, "elem": "mrna9"},
+        "mrna_decay10": {"rate": args["mrna_dis_rate"]*10, "elem": "mrna10"},
         "protein_prod": {"rate": args["protein_prod_rate"], "elem": "mrna"},
         "protein_decay": {"rate": args["protein_dis_rate"], "elem": "protein"},
     }
