@@ -87,47 +87,52 @@ def run_simulation(experiment, events_description):
     if experiment["progress_active"]:
         print("\n" * njobs)
 
-    # Each element of this list represents a number of proteins created by one mRNA
-    #timeseries = []
-    #dataseries = []
-
-    # Want workers to ignore Keyboard interrupt
-    original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
-
-    # Create the pool of workers
-    pool = Pool(njobs)
-
-    # restore signals for the main process
-    signal.signal(signal.SIGINT, original_sigint_handler)
-
     data = {}
     time_s = {}
     data_s = {}
+    # Each element of this list represents a number of proteins created by one mRNA
     timeseries, dataseries = [], []
 
-    try:
-        for job in range(njobs):
-            data[job] = pool.apply_async(run_batch, (experiment, events_description, njobs, job))
+    if njobs > 1:
 
-        pool.close()
+        # Want workers to ignore Keyboard interrupt
+        original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+        # Create the pool of workers
+        pool = Pool(njobs)
+
+        # restore signals for the main process
+        signal.signal(signal.SIGINT, original_sigint_handler)
+
+        try:
+            for job in range(njobs):
+                data[job] = pool.apply_async(run_batch, (experiment, events_description, njobs, job))
+
+            pool.close()
+
+            for job in range(njobs):
+                time_s[job], data_s[job] = data[job].get(experiment['hard_limit'])
+                timeseries += time_s[job]
+                dataseries += data_s[job]
+
+        except KeyboardInterrupt:
+            pool.terminate()
+            print("\n\nCaught KeyboardInterrupt, workers have been terminated\n")
+            timeseries, dataseries = [], []
+            raise SystemExit
+
+        except TimeoutError:
+            pool.terminate()
+            print("\n\nThe workers ran out of time. Terminating simulation.\n")
+            raise SystemExit
+
+        pool.join()
+    else:
 
         for job in range(njobs):
-            time_s[job], data_s[job] = data[job].get(experiment['hard_limit'])
+            time_s[job], data_s[job] = run_batch(experiment, events_description, njobs, job)
             timeseries += time_s[job]
             dataseries += data_s[job]
-
-    except KeyboardInterrupt:
-        pool.terminate()
-        print("\n\nCaught KeyboardInterrupt, workers have been terminated\n")
-        timeseries, dataseries = [], []
-        raise SystemExit
-
-    except TimeoutError:
-        pool.terminate()
-        print("\n\nThe workers ran out of time. Terminating simulation.\n")
-        raise SystemExit
-
-    pool.join()
 
     print("\nRearranging arrays...\n\n")
     protein_number = []
@@ -162,9 +167,13 @@ def gillespie(experiment, events_description, distributions):
     event_probability = {}
     event_threshold = {}
 
-
     for molecule_name, initial_number in experiment["initial_population"].items():
         molecule_population[molecule_name] = initial_number
+
+    time = [0.0]
+    data = [molecule_population.copy()]
+    timeframe = experiment["framestep"]
+    stop_time = experiment["initial_time"] + experiment["duration"]
 
     for event_name in events_description:
         event_generator[event_name] = events_description[event_name]["elem"]
@@ -174,9 +183,12 @@ def gillespie(experiment, events_description, distributions):
     for event in events_description:
         effective_rate += molecule_population[event_generator[event]] * event_rate[event]
 
-    timeframe = 0.0
-    time = []
-    data = []
+    delta_t = np.random.exponential(1.0 / effective_rate)
+    clock_time += delta_t
+    while clock_time > timeframe and timeframe <= stop_time:
+        time.append(timeframe)
+        timeframe += experiment["framestep"]
+        data.append(molecule_population.copy())
 
     events_order = [
         "burst_arrival",
@@ -186,13 +198,7 @@ def gillespie(experiment, events_description, distributions):
         "protein_decay",
     ]
 
-    stop_time = experiment["initial_time"] + experiment["duration"]
     while clock_time < stop_time and effective_rate > 0.0:
-
-        while clock_time >= timeframe:
-            time.append(timeframe)
-            data.append(molecule_population.copy())
-            timeframe += experiment["framestep"]
 
         for event in events_description:
             event_probability[event] = \
@@ -205,6 +211,20 @@ def gillespie(experiment, events_description, distributions):
             event_threshold[event] = threshold
 
         choose_event = np.random.uniform()
+
+        # # This block is useful for debugging
+        # if choose_event < event_threshold["burst_arrival"]:
+        #     next_event = "burst_arrival"
+        # elif choose_event < event_threshold["mrna_sene1"]:
+        #     next_event = "mrna_sene1"
+        # elif choose_event < event_threshold["mrna_decay"]:
+        #     next_event = "mrna_decay"
+        # elif choose_event < event_threshold["protein_prod"]:
+        #     next_event = "protein_prod"
+        # elif choose_event < event_threshold["protein_decay"]:
+        #     next_event = "protein_decay"
+        # # end for debug
+
         if choose_event < event_threshold["burst_arrival"]:
             arrival_size = distributions[experiment["burst_size_distribution"]]()
             molecule_population["mrna"] += arrival_size
@@ -217,18 +237,21 @@ def gillespie(experiment, events_description, distributions):
             molecule_population["mrna2"] -= 1
         elif choose_event < event_threshold["protein_prod"]:
             molecule_population["protein"] += 1
-        elif choose_event < event_threshold["protein_decay"]:
+        elif choose_event <= event_threshold["protein_decay"]:
             molecule_population["protein"] -= 1
 
-        clock_time += np.random.exponential(1.0 / effective_rate)
         effective_rate = 0.0
         for event in events_description:
             effective_rate += molecule_population[event_generator[event]] * event_rate[event]
+        
+        delta_t = np.random.exponential(1.0 / effective_rate)
+        clock_time += delta_t
+        
+        while clock_time > timeframe and timeframe <= stop_time:
+            time.append(timeframe)
+            timeframe += experiment["framestep"]
+            data.append(molecule_population.copy())
 
-    while clock_time >= timeframe:
-        time.append(timeframe)
-        data.append(molecule_population.copy())
-        timeframe += experiment["framestep"]
 
     time.append(timeframe)
     data.append(molecule_population)
