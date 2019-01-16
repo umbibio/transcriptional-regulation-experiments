@@ -260,7 +260,7 @@ def gillespie(experiment, events_description, distributions):
 def save_datafile(events_description, experiment, experiment_data):
     filepath = './data/%s' % (experiment["exp_id"])
     np.save(filepath, [events_description, experiment, experiment_data])
-    np.save('./data/last', [events_description, experiment, experiment_data])
+    # np.save('./data/last', [events_description, experiment, experiment_data])
 
 def save_last_histogram(events_description, experiment, experiment_data, max_bin=None, max_height=None, show_plot=False):
     
